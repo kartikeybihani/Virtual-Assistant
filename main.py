@@ -52,18 +52,6 @@ def siri_command_process():
             voice = listener.listen(source)
             command = listener.recognize_google(voice, language='en-in')
 
-            # if "hey Siri" in command:
-            #     command = command.replace("hey Siri", "")
-
-            # if "hey siri" in command:
-            #     command = command.replace("hey siri", "")
-
-            # if "siri" in command:
-            #     command = command.replace("siri", "")
-
-            # if "Siri" in command:
-            #     command = command.replace("Siri", "")
-
             print("User said: " + command)
 
     except Exception as e:
@@ -140,25 +128,23 @@ def run_siri():
 
     elif "where i am" in command or "what's my location" in command or "tell me my location" in command or "where am i" in command:
         speak("Let me check that for you")
-        print("I think we are in Kota, Rajasthan, India")
-        speak("I think we are in Kota, Rajasthan, India")
-        # try:
-        #     ipAdd = requests.get('https://api.ipify.org').text
-        #     print(f"Your IP Address - {ipAdd}")
-        #     url = f'https://get.geojs.io/v1/ip/geo/2409:4052:e05:bf2f:bcaf:3d8e:c389:a8a7.json'
-        #     geo_requests = requests.get(url)
-        #     geo_data = geo_requests.json()
-        #     city = geo_data['city']
-        #     country = geo_data['country']
-        #     print(f"I think we are in {city}, {country}")
-        #     speak(f"I think we are in {city}, {country}")
-        # except Exception as e:
-        #     print(e)
-        #     speak("Sorry, Due to some issue I am not able to find where we are")
+        try:
+            ipAdd = requests.get('https://api.ipify.org').text
+            print(f"Your IP Address - {ipAdd}")
+            url = f'https://get.geojs.io/v1/ip/geo/2409:4052:e05:bf2f:bcaf:3d8e:c389:a8a7.json'
+            geo_requests = requests.get(url)
+            geo_data = geo_requests.json()
+            city = geo_data['city']
+            country = geo_data['country']
+            print(f"I think we are in {city}, {country}")
+            speak(f"I think we are in {city}, {country}")
+        except Exception as e:
+            print(e)
+            speak("Sorry, Due to some issue I am not able to find where we are")
 
     elif "call" in command or "phone" in command:
-        account_sid = "ACff7a5c322db1219ffc6490edeaf6ae1e"
-        auth_token = "d97febc63bdfc35ed2ae11cd90f7fd19"
+        account_sid = "YOUR ID"
+        auth_token = "YOUR TOKEN"
         client = Client(account_sid, auth_token)
 
         try:
@@ -167,8 +153,8 @@ def run_siri():
 
             message = client.calls \
                 .create(
-                    to='+918949544621',
-                    from_='+15123513885',
+                    to='YOUR PHONE NUMBER',
+                    from_='YOUR ISSUED PHONE NUMBER',
                     twiml='<Response><Say>This is AI</Say></Response>'
                 )
 
@@ -259,9 +245,6 @@ def run_siri():
         except Exception as e:
             # print(e)
             speak("Sorry, I can't find any results, but here's what I got for you")
-            command = command.replace(
-                "tell me something about" or "search" or "wikipedia", "")
-            # command = command.replace("tell me something about", "")
             chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
             result = webbrowser.get(chrome_path).open(
                 "https://www.google.com/search?q={}".format(command))
@@ -323,8 +306,3 @@ if __name__ == '__main__':
     Intro()
     while True:
         run_siri()
-
-
-# elif "open code" in command:
-# 	code_path = "C:\\Users\\Kartikey Bihani\\AppData\\Local\\Programs\\VS Code\\Code.exe"
-# 	os.startfile(code_path)
