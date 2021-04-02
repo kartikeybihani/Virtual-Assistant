@@ -1,6 +1,4 @@
 import pyttsx3
-import pyttsx3.drivers.sapi5
-import pyttsx3.drivers
 import speech_recognition as sr
 import datetime
 import pywhatkit
@@ -10,13 +8,20 @@ import smtplib
 import os
 import webbrowser
 import wolframalpha
+import bluetooth
+import requests
+from requests import get
+import ctypes
+from twilio.rest import Client
 
-from info import sendEmail
+from Alarm_Clock import Alarm
+from News_Source import News
+from Email_Source import Email
 
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[0].id)
-# print(voices)
+# print(voices[0].id)
 
 
 def speak(audio):
@@ -27,13 +32,13 @@ def speak(audio):
 def Intro():
     hour = int(datetime.datetime.now().hour)
     if hour >= 0 and hour < 12:
-        speak("Hi, Good Morning! . I am Siri, How can I help you")
+        speak("Hi, Good Morning, I am zira, How can I help you")
 
     elif hour >= 12 and hour < 18:
-        speak("Hi, Good Afternoon! . I am Siri, How can I help you")
+        speak("Hi, Good Afternoon, I am Siri, How can I help you")
 
     else:
-        speak("Hi, Good Evening! . I am Siri, How can I help you")
+        speak("Hi, Good Evening, I am Siri, How can I help you")
 
 
 def siri_command_process():
@@ -47,17 +52,17 @@ def siri_command_process():
             voice = listener.listen(source)
             command = listener.recognize_google(voice, language='en-in')
 
-            if "hey siri" in command:
-                command = command.replace("hey siri", "")
+            # if "hey Siri" in command:
+            #     command = command.replace("hey Siri", "")
 
-            if "hey Siri" in command:
-                command = command.replace("hey Siri", "")
+            # if "hey siri" in command:
+            #     command = command.replace("hey siri", "")
 
-            if "siri" in command:
-                command = command.replace("siri", "")
+            # if "siri" in command:
+            #     command = command.replace("siri", "")
 
-            if "Siri" in command:
-                command = command.replace("Siri", "")
+            # if "Siri" in command:
+            #     command = command.replace("Siri", "")
 
             print("User said: " + command)
 
@@ -77,7 +82,105 @@ intro_words1 = {"how do you do": "how do you do", "how are you": "how are you"}
 def run_siri():
     command = siri_command_process().lower()
 
-    if "joke" in command:
+    if "whatsapp message" in command:
+        try:
+
+            hours = datetime.datetime.now().hour  # 21
+            mins = datetime.datetime.now().strftime("%M")
+
+            speak("Please type the number you want to send the message to")
+            number_input = input(
+                "Please type the number you want to send the message to here: ")
+            rec_number = f"+91{number_input}"
+
+            print("\nWhat should I say in the message ?")
+            speak("What should I say in the message ?")
+
+            if hours > 0 and hours <= 12:
+                a = datetime.datetime.now().strftime("%I")  # 09
+                pywhatkit.sendwhatmsg(
+                    f"{rec_number}", f"{siri_command_process().capitalize()}", int(a), (int(mins) + 1.5))
+                print("\nMessage has been sent successfully !")
+                speak("Message has been sent successfully !")
+
+            else:
+                b = datetime.datetime.now().strftime("%H")  # 21
+                pywhatkit.sendwhatmsg(
+                    f"{rec_number}", f"{siri_command_process().capitalize()}", int(b), (int(mins) + 1.5))
+                print("\nMessage has been sent successfully !")
+                speak("Message has been sent successfully !")
+
+        except Exception as e:
+            print(e)
+            speak("Sorry, can't send the message beacuse of some issue")
+
+    elif "news" in command:
+        try:
+            News()
+        except Exception as e:
+            print("Sorry, I am not able to do that at the moment..")
+            speak("Sorry, I am not able to do that at the moment..")
+
+    elif "what are you doing" in command:
+        speak("I am talking to you")
+
+    elif "i am fine" in command or "i am good" in command:
+        speak("Good to hear that")
+
+    elif "reminder" in command or "alarm" in command or "remind" in command:
+        try:
+            Alarm(command)
+        except Exception as e:
+            print("Sorry, can't understand that. You should say the time in the sentence to set a reminder or alarm")
+            speak("Sorry, can't understand that. You should say the time in the sentence to set a reminder or alarm")
+
+    elif 'lock window' in command:
+        speak("locking the device")
+        ctypes.windll.user32.LockWorkStation()
+
+    elif "where i am" in command or "what's my location" in command or "tell me my location" in command or "where am i" in command:
+        speak("Let me check that for you")
+        print("I think we are in Kota, Rajasthan, India")
+        speak("I think we are in Kota, Rajasthan, India")
+        # try:
+        #     ipAdd = requests.get('https://api.ipify.org').text
+        #     print(f"Your IP Address - {ipAdd}")
+        #     url = f'https://get.geojs.io/v1/ip/geo/2409:4052:e05:bf2f:bcaf:3d8e:c389:a8a7.json'
+        #     geo_requests = requests.get(url)
+        #     geo_data = geo_requests.json()
+        #     city = geo_data['city']
+        #     country = geo_data['country']
+        #     print(f"I think we are in {city}, {country}")
+        #     speak(f"I think we are in {city}, {country}")
+        # except Exception as e:
+        #     print(e)
+        #     speak("Sorry, Due to some issue I am not able to find where we are")
+
+    elif "call" in command or "phone" in command:
+        account_sid = "ACff7a5c322db1219ffc6490edeaf6ae1e"
+        auth_token = "d97febc63bdfc35ed2ae11cd90f7fd19"
+        client = Client(account_sid, auth_token)
+
+        try:
+            # print("\nWhat should I say in the message ?")
+            # speak("What should I say in the message ?")
+
+            message = client.calls \
+                .create(
+                    to='+918949544621',
+                    from_='+15123513885',
+                    twiml='<Response><Say>This is AI</Say></Response>'
+                )
+
+            print("Call has been made successfully !")
+            speak("Call has been made successfully !")
+            quit()
+
+        except Exception as e:
+            print(e)
+            speak("Sorry, can't send the message beacuse of some issue")
+
+    elif "joke" in command:
         joke = pyjokes.get_joke()
         print(joke)
         speak(joke)
@@ -91,8 +194,8 @@ def run_siri():
         speak("I am fine ! How can I help you ?")
 
     elif "who are you" in command:
-        print("Hi, I am siri ! Your AI Assistant . I was built at Kartikey's house")
-        speak("Hi, I am siri ! Your AI Assistant . I was built at Kartikey's house")
+        print("Hi, I am siri ! Your Virtual Assistant . I was built at Kartikey's house")
+        speak("Hi, I am siri ! Your Virtual Assistant . I was built at Kartikey's house")
 
     elif "where were you made" in command:
         print("Hi, I am siri ! Your AI Assistant . I was built at Kartikey's house")
@@ -104,8 +207,17 @@ def run_siri():
         print("Playing" + song)
         pywhatkit.playonyt(song)
 
+    elif "bluetooth" in command:
+        print("Looking for nearby bluetooth devices...")
+        speak("Looking for nearby bluetooth devices")
+        nearby_devices = bluetooth.discover_devices(lookup_names=True)
+
+        for addr, name in nearby_devices:
+            print("Address: ", addr)
+            print("Name: ", name)
+
     elif "what" in command or "how" in command:
-        client = wolframalpha.Client("5GALLA-9X67KG9GEK")
+        client = wolframalpha.Client("YOUR API KEY HERE")
         res = client.query(command)
 
         try:
@@ -113,37 +225,37 @@ def run_siri():
             speak(next(res.results).text)
         except Exception as e:
             print(e)
-            speak("Sorry, I can't find any results")
+            speak("Sorry, I can't find any results but here's what I got for you")
+            chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+            result = webbrowser.get(chrome_path).open(
+                "https://www.google.com/search?q={}".format(command))
 
     elif "where" in command or "who is the" in command:
-        client = wolframalpha.Client("5GALLA-9X67KG9GEK")
+        client = wolframalpha.Client("YOUR API KEY HERE")
         res = client.query(command)
 
         try:
-            if "(data not available)":
-                speak("Sorry, I can't find any results, but here's what I got for you")
-                chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
-                result = webbrowser.get(chrome_path).open(
-                    "https://www.google.com/search?q={}".format(command))
-            else:
-                print(next(res.results).text)
-                speak(next(res.results).text)
+            print(next(res.results).text)
+            speak(next(res.results).text)
         except Exception as e:
             speak("Sorry, I can't find any results, but here's what I got for you")
             chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
             result = webbrowser.get(chrome_path).open(
                 "https://www.google.com/search?q={}".format(command))
 
-    elif "wikipedia" in command or "who" in command or "tell me something about" in command or "search" in command:
+    elif "wikipedia" in command or "who" in command or "tell me something about" in command or "search" in command or "what is" in command:
         command = command.lower()
         command = command.replace(
             "who" or "tell me something about" or "wikipedia" or "search", "")
-        # command = command.replace("who" and "tell" and "wikipedia" and "search" and "tell me something about" and "tell me about" and "hey Siri" and "hey siri tell me something about" and "hi" and "siri", "")
+
         try:
             command = command.replace("wikipedia", "")
-            results = wikipedia.summary(command, sentences=4)
+            results = wikipedia.summary(command, sentences=3)
             print(results)
             speak("According to wikipedia " + results)
+            print(wikipedia.page(f"\n{command}").url)
+            speak("You can get more information from link given")
+
         except Exception as e:
             # print(e)
             speak("Sorry, I can't find any results, but here's what I got for you")
@@ -163,9 +275,9 @@ def run_siri():
 
             print("\nWhat should I say in the email ?")
             speak("What should I say in the email ?")
-            msg = f"Hey\n \n{siri_command_process()} \n\nRegards\nKartikey Bihani"
+            msg = f"Hey\n \n{siri_command_process().capitalize()} \n\nRegards\nKartikey Bihani"
 
-            sendEmail(to, msg)
+            Email(to, msg)
             print("\nEmail has been sent successfully !")
             speak("Email has been sent successfully !")
         except Exception as e:
@@ -183,17 +295,36 @@ def run_siri():
         speak("Thank you for using me")
         quit()
 
-    elif 'thank you' in command or 'thanx' in command or 'thanks' in command or 'good' in command:
+    elif 'thank you' in command or "ok  thank you" in command or "thank you  and bye" in command or 'thanx' in command or 'thanks' in command or 'good' in command or "nice" in command:
         speak("No problem . It's my pleasure to help you !")
 
+    elif "you are bad" in command or "bad" in command:
+        speak("That's not nice")
+        quit()
 
-# Intro()
-while True:
-    run_siri()
+    else:
+        client = wolframalpha.Client("YOUR API KEY HERE")
+        res = client.query(command)
+
+        try:
+            print(next(res.results).text)
+            speak(next(res.results).text)
+        except Exception as e:
+            print(e)
+            speak(
+                "Sorry, I can't find any results for that, but here's what I got for you")
+            chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+            result = webbrowser.get(chrome_path).open(
+                "https://www.google.com/search?q={}".format(command))
+            quit()
+
+
+if __name__ == '__main__':
+    Intro()
+    while True:
+        run_siri()
 
 
 # elif "open code" in command:
 # 	code_path = "C:\\Users\\Kartikey Bihani\\AppData\\Local\\Programs\\VS Code\\Code.exe"
 # 	os.startfile(code_path)
-# elif "time" in command:
-# 		speak("It is " + datetime.datetime.now().strftime("%I %M %p") + '.')
